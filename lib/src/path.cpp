@@ -11,8 +11,9 @@ namespace path {
 
 State dynamics(const double s, const State &x, const Params &params) {
   State xDot;
-  //      ʃcos(θ(s))ds     ʃsin(θ(s))ds     ʃk(s)ds   求解k(s)
-  xDot << std::cos(x[ST]), std::sin(x[ST]), x[SK], params.kDotPoly(s); //k(s)
+  //      ʃcos(θ(s))ds     ʃsin(θ(s))ds     ʃk(s)ds   k(s)
+//  xDot << std::cos(x[ST]), std::sin(x[ST]), x[SK], params.kDotPoly(s); //k(s)
+  xDot << std::cos(params.kDotPoly.theta(s)), std::sin(params.kDotPoly.theta(s)), params.kDotPoly.curvature(s), params.kDotPoly(s);
   return xDot;
 }
 
@@ -25,6 +26,7 @@ double OptimizationProblem::value(const cppoptlib::Problem<double>::TVector &q) 
   params.kDotPoly.S = q(0);
   params.kDotPoly.k0 = xs(SK);
   params.kDotPoly.kf = xe(SK);
+  params.kDotPoly.theta0 = xs(ST);
   Path path = shootSimpson(dynamics, xs, params.S, N, params);  //积分得到路径
   State endpoint = path.col(path.cols() - 1);
   double cost = static_cast<double>((xe - endpoint).squaredNorm()); //范数，即所有元素平方之和
@@ -77,12 +79,21 @@ Params optimizeParams(const State &xs, const State &xe) {
 
 Path generate(const State &initialState, const State &finalState, int points) {
 
-  Params params= optimizeParams(initialState, finalState);
+//    double S = 16.1944;
+//    double p1 = -0.214639;
+//    double p2 = 0.214639;
+//    Eigen::VectorXd coeffs = Eigen::VectorXd::Zero(2);
+//    coeffs << p1,p2;
+//  Polynomial poly(coeffs);
+
+//  Params params(S,poly);//= optimizeParams(initialState, finalState);
+  Params params = optimizeParams(initialState, finalState);
   std::cout << "coffes:" << params.vector() << std::endl;
 
   params.kDotPoly.S = params.S;
   params.kDotPoly.k0 = initialState(SK);
   params.kDotPoly.kf = finalState(SK);
+  params.kDotPoly.theta0 = initialState(ST);
   return shootSimpson(dynamics, initialState, params.S, points - 1, params);
 }
 
