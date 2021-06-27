@@ -18,7 +18,7 @@ Reference blog
 
 #### Installation
 1. Install [Eigen](https://eigen.tuxfamily.org/dox/GettingStarted.html).
-
+2. Install [gnuplot ](http://www.gnuplot.info/download.html)(If you don't need to display path results, you can comment out the plot code.)
 
 #### Contact
 rongmin liang
