@@ -48,43 +48,28 @@ inline Eigen::MatrixXd shootSimpson(Fun func, const Eigen::VectorXd &xs,
     f0 = f2;
   }
 
-
-//  for (int i = 1; i < panels; i += 2) {
-//    f1 = func(i * h, path.col(i - 1), std::forward<Args...>(args...));
-//    f2 = func(i * h + h, path.col(i - 1), std::forward<Args...>(args...));
-//
-//    path.col(i) = path.col(i - 1) + (f0 + f1) * (h / 2.0);
-//    path.col(i + 1) = path.col(i - 1) + (f0 + 4 * f1 + f2) * (h / 3.0);
-//
-//    f0 = f2;
-//  }
-
-//  if (panels % 2 == 1) {
-//    f1 = func((panels - 1) * h, path.col(panels - 1), args...);
-//    path.col(panels) = path.col(panels - 1) + (f0 + f1) * (h / 2.0);
-//  }
-
   return path;
 }
 
 /*
  * 返回积分结果的Simpson积分函数
  */
-template <class Fun, class ...Arg>
+template <class Fun, class... Args>
 inline Eigen::VectorXd SimpsonFun(Fun fun, const Eigen::VectorXd &xs,
-                         double S, int N, Arg &&...arg){
-    double h = S/static_cast<double>(N);
+                         double S, int N, Args &&... args){
+    double h = S/static_cast<double>(2*N);
     Eigen::VectorXd Sum, sum1, sum2;
     sum1 = xs; sum2 = xs; Sum = xs;
     sum1.setZero(), sum2.setZero();
 
-    for(int i=0; i<N-1; i++ ){
-        sum1 = sum1 + fun( (2*i+1) * h );
+//    for(int i=0; i<N-1; i++ ){
+    sum1 = sum1 + fun( h, std::forward<Args...>(args...)  );
+//    }
+    for (int i = 1; i < N; ++i) {
+        sum2 = sum2 + fun( 2*i*h, std::forward<Args...>(args...) );
+        sum1 = sum1 + fun( (2*i+1) * h , std::forward<Args...>(args...));
     }
-    for (int i = 1; i < N-1; ++i) {
-        sum2 = sum2 + fun( 2*i*h );
-    }
-    Sum +=  h*( fun(0.0) + 4*sum1 + 2*sum2 + fun(S) );
+    Sum +=  h*( fun(0.0, std::forward<Args...>(args...)) + 4*sum1 + 2*sum2 + fun(S, std::forward<Args...>(args...) ) )/3;
     return Sum;
 }
 

@@ -31,6 +31,7 @@ namespace path {
 struct Params {
   double S;
   Polynomial kDotPoly;
+//  MinCur  minCur;
 
   Params(double S, const Polynomial &kDotPoly);
 

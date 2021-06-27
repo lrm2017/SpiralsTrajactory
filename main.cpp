@@ -11,31 +11,6 @@
 
 using namespace cppoptlib;
 using namespace Eigen;
-class Rosenbrock : public Problem<double> {
-public:
-    double value(const TVector &x) {
-        const double t1 = (1 - x[0]);
-        const double t2 = (x[1] - x[0] * x[0]);
-        return   t1 * t1 + 100 * t2 * t2;
-    }
-//    void gradient(const TVector &x, TVector &grad) {
-//        grad[0]  = -2 * (1 - x[0]) + 200 * (x[1] - x[0] * x[0]) * (-2 * x[0]);
-//        grad[1]  = 200 * (x[1] - x[0] * x[0]);
-//    }
-};
-
-Eigen::VectorXd intCos(double s, Eigen::VectorXd &xs){
-    Eigen::VectorXd xdot = xs;
-    xdot << cos(s), sin(s);
-    return xdot;
-}
-
-//int main(){
-//    Eigen::Matrix<double, 2, 1> xd;
-//    xd.setZero();
-//    Eigen::MatrixXd path = polytraj::shootSimpson(intCos,xd, M_PI,100);
-//
-//}
 
 int main(){
     using namespace polytraj::path;
@@ -44,8 +19,13 @@ int main(){
 
     xs << 5, 5, M_PI_2, 0.0; //(x,y,theta,curvature);
     xe << 15, 15, M_PI_2, 0.0;
+    clock_t start,end;
+    start = clock();
+    Path path = generate(xs, xe, 100);        //只有边界条件
+//    Path path = generateMinE(xs,xe,100);    //最小能量指标+边界约束
+    end = clock();
+    std::cout << "time cost is:" << double(end-start)/CLOCKS_PER_SEC << "\n";
 
-    Path path = generate(xs, xe, 100);
     Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
 
     std::cout << "Start Posture: " << xs.transpose().format(CleanFmt)
@@ -80,6 +60,33 @@ int main(){
     fprintf(pipe,"pause mouse\n");
     _pclose(pipe);
 }
+
+
+//class Rosenbrock : public Problem<double> {   //测试迭代器的使用方法
+//public:
+//    double value(const TVector &x) {
+//        const double t1 = (1 - x[0]);
+//        const double t2 = (x[1] - x[0] * x[0]);
+//        return   t1 * t1 + 100 * t2 * t2;
+//    }
+////    void gradient(const TVector &x, TVector &grad) {
+////        grad[0]  = -2 * (1 - x[0]) + 200 * (x[1] - x[0] * x[0]) * (-2 * x[0]);
+////        grad[1]  = 200 * (x[1] - x[0] * x[0]);
+////    }
+//};
+//
+//Eigen::VectorXd intCos(double s, Eigen::VectorXd &xs){
+//    Eigen::VectorXd xdot = xs;
+//    xdot << cos(s), sin(s);
+//    return xdot;
+//}
+//
+////int main(){
+////    Eigen::Matrix<double, 2, 1> xd;
+////    xd.setZero();
+////    Eigen::MatrixXd path = polytraj::shootSimpson(intCos,xd, M_PI,100);
+////
+////}
 
 //int main(int argc, char const *argv[]) {
 //    clock_t start,finish;

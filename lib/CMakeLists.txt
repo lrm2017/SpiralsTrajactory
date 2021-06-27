@@ -24,6 +24,9 @@ add_library(PolyTrajLib
         src/params.cpp
 
         include/polytraj.h
+
+        src/miniEnergy.cpp
+        src/miniEnergy.h
         )
 
 # Grab headers from the include directory.

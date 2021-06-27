@@ -22,7 +22,8 @@ using Path = Eigen::Matrix<double, SSZ, Eigen::Dynamic>;
 /// Generate a path from the initial to the final state..
 Path generate(const State &initialState, const State &finalState,
               int points = 101);
-
+Path generateMinE(const State &initialState, const State &finalState,
+                  int points = 101);
 }  // namespace path
 
 namespace trajectory {

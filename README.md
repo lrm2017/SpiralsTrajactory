@@ -1,7 +1,8 @@
 # spiralsTrajactory
 
 #### 介绍
-基于螺旋曲线的轨迹生成，设置起点与终点，可生成轨迹 
+基于螺旋曲线的轨迹生成，设置起点与终点，可生成轨迹
+
 参考论文
 1. [Parallel Algorithms for Real-time Motion Planning](https://www.ri.cmu.edu/pub_files/2011/7/mcnaughton-thesis.pdf)
 

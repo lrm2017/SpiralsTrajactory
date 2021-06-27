@@ -4,9 +4,10 @@
 #include "params.h"
 #include "polynomial.h"
 #include "polytraj.h"
-
+#include "miniEnergy.h"
 #include "cppoptlib/meta.h"
 #include "cppoptlib/problem.h"
+
 #include <Eigen/Dense>
 
 namespace polytraj {
@@ -35,6 +36,19 @@ public:
   // void hessian(const cppoptlib::Problem<double>::TVector& q,
   // cppoptlib::Problem<double>::THessian& hess);
 };
+
+    class minEnergyProblem: public cppoptlib::Problem<double> {
+    public:
+        Eigen::VectorXd xs;
+        Eigen::VectorXd xe;
+//        miniEnergy miniE;
+        int N;
+
+        minEnergyProblem(const Eigen::VectorXd &xs, const Eigen::VectorXd &xe, int N = 100)
+            : xs(xs), xe(xe), N(N){} ;
+        double value(const cppoptlib::Problem<double>::TVector &q);
+    };
+
 
 }  // namespace path
 }  // namespace polytraj

@@ -1,18 +1,18 @@
 #include "path.h"
 #include "shoot.h"
+#include "miniEnergy.h"
 
 #include <cppoptlib/solver/neldermeadsolver.h>
 #include <cppoptlib/solver/newtondescentsolver.h>
 
 namespace polytraj {
 namespace path {
-
-
+int cnt = 0;    //记录迭代次数
 
 State dynamics(const double s, const State &x, const Params &params) {
   State xDot;
   //      ʃcos(θ(s))ds     ʃsin(θ(s))ds     ʃk(s)ds   k(s)
-//  xDot << std::cos(x[ST]), std::sin(x[ST]), x[SK], params.kDotPoly(s); //k(s)
+//  xDot << std::cos(x[ST]), std::sin(x[ST]), x[SK], params.kDotPoly(s); //k(s)  //累积结果误差太大，直接公式求解
   xDot << std::cos(params.kDotPoly.theta(s)), std::sin(params.kDotPoly.theta(s)), params.kDotPoly.curvature(s), params.kDotPoly(s);
   return xDot;
 }
@@ -30,6 +30,7 @@ double OptimizationProblem::value(const cppoptlib::Problem<double>::TVector &q) 
   Path path = shootSimpson(dynamics, xs, params.S, N, params);  //积分得到路径
   State endpoint = path.col(path.cols() - 1);
   double cost = static_cast<double>((xe - endpoint).squaredNorm()); //范数，即所有元素平方之和
+  cnt++;
   return cost;
 }
 
@@ -62,6 +63,7 @@ Params initParams(const State &xs, const State &xe) {
   Polynomial poly(coeffs);
   poly.k0 = p0;
   poly.kf = p3;
+  poly.theta0 = xs[ST];
 
   return Params(S, poly);
 }
@@ -79,16 +81,9 @@ Params optimizeParams(const State &xs, const State &xe) {
 
 Path generate(const State &initialState, const State &finalState, int points) {
 
-//    double S = 16.1944;
-//    double p1 = -0.214639;
-//    double p2 = 0.214639;
-//    Eigen::VectorXd coeffs = Eigen::VectorXd::Zero(2);
-//    coeffs << p1,p2;
-//  Polynomial poly(coeffs);
-
-//  Params params(S,poly);//= optimizeParams(initialState, finalState);
   Params params = optimizeParams(initialState, finalState);
-  std::cout << "coffes:" << params.vector() << std::endl;
+  std::cout << "iteration:" << cnt << std::endl;
+  std::cout << "coffes:" << params.vector().transpose() << std::endl;
 
   params.kDotPoly.S = params.S;
   params.kDotPoly.k0 = initialState(SK);
@@ -97,16 +92,45 @@ Path generate(const State &initialState, const State &finalState, int points) {
   return shootSimpson(dynamics, initialState, params.S, points - 1, params);
 }
 
-Path generate(const State &initialState, const State &finalState, std::string minEnergy, int points) {
 
-    if( minEnergy == "minCur")
-        ;
-    Params params= optimizeParams(initialState, finalState);
-    std::cout << "coffes:" << params.vector() << std::endl;
 
+/******************* J=1/2*ʃk²(s)ds ************************/
+Eigen::VectorXd fuc(const double s, const miniEnergy &miniEnergy)
+{
+    Eigen::VectorXd p =  miniEnergy.params(s);
+//    std::cout << "p:" << p << "\n";
+    return p;    //返回参数
+}
+
+double minEnergyProblem::value(const cppoptlib::Problem<double>::TVector &q) {
+    miniEnergy miniEnergy(xs, xe, q.tail(q.size()-1));
+    miniEnergy.S = q(0);
+    miniEnergy.poly.S = q(0);
+
+    Eigen::VectorXd state(5);
+    state << xs.head(3), 0, 0;  //前三个是对拉格朗日系数是的偏导，后面三个哈密顿函数对参数p的偏导
+    Eigen::VectorXd end = SimpsonFun(fuc, state, miniEnergy.S, N, miniEnergy);
+    Eigen::VectorXd endpoint(6);    endpoint << end, miniEnergy.dHs;
+    Eigen::VectorXd goal(6);
+    goal << xe.head(3),0, 0, 0;
+    double cost = static_cast<double>((goal - endpoint).squaredNorm());
+    cnt++;  //记录迭代次数
+    return cost;
+}
+/*
+ * generate path for minimize Energy J = 1/2ʃk²(s)ds
+ */
+Path generateMinE(const State &initialState, const State &finalState, int points) {
+
+    miniEnergy miniE(initialState,finalState);
+    miniE.initParams(); //初始化参数
+    miniE.optimize();   //构造迭代器，迭代求解最优
+    std::cout << "iteration:" << cnt << std::endl;
+    std::cout << "coffes:" << miniE.vector().transpose() << std::endl;
+//    miniE.S = 16.414309186895245;
+//    miniE.poly.coeffs << -0.215539590858886,0.227178067055290, -0.499563528001170, -0.167296115567592, -1.711273434314969;
+    Params params(miniE.S, miniE.poly);
     params.kDotPoly.S = params.S;
-    params.kDotPoly.k0 = initialState(SK);
-    params.kDotPoly.kf = finalState(SK);
     return shootSimpson(dynamics, initialState, params.S, points - 1, params);
 }
 
