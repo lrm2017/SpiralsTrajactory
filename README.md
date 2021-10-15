@@ -1,4 +1,7 @@
 # spiralsTrajactory
+这个分支的代码只是一个简单的实现两端边界约束，不能添加不等式路径约束，现在分支casADi使用直接配点法能够添加所有的约束，建议有需求的用casADi分支的代码
+The code for this branch is simply an implementation of both end boundary constraints, and you cannot add inequality path constraints, now branch casADi can add all constraints using the direct collocation method, suggesting code that uses the CasADi branch if needed.
+
 
 #### Introdution
 sprialsTrajactory is a C++ trajectory generation library for autonomous vehicle motion planning based on project [PolyTraj](https://github.com/jsford/PolyTraj). Given a start pose and an end pose, spiralsTrajactory will generate a C2 continuous path connecting the two poses.  This project is more accurate and stable than project PolyTraj.
