@@ -100,3 +100,6 @@ if(isOk)  sol_state = solver.getSolCollocation(solver.X);   // 获取迭代过�
 
 ## 示意图
 
+![](https://github.com/lrm2017/SpiralsTrajactory/blob/matcasadi/image/%E4%BA%8C%E7%BB%B4.png?raw=true)
+
+![](https://github.com/lrm2017/SpiralsTrajactory/blob/matcasadi/image/%E4%B8%89%E7%BB%B4.png?raw=true)
