@@ -1,6 +1,6 @@
 # spiralsTrajactory
 
-## 分支 casADi
+## 分支 matcasadi
 更新了基于 C++/Matlab casADi 求解待路径约束的轨迹优化，可以求解不等式约束。有需要的切换到casADi分支。
 
 #### **notice**
